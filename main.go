@@ -16,8 +16,7 @@ func main() {
 
 	myApp := App{}
 	myApp.Initialize()
-
-	myApp.Run(":8080")
+	myApp.Run()
 }
 
 func loadEnvVariables() error {
