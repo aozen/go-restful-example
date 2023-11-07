@@ -21,18 +21,9 @@ func (app *App) Run() {
 	log.Fatal(http.ListenAndServe(":8080", app.Router))
 }
 
-func (app *App) Initialize() {
-	connectionString := getDBConnectionString()
-	fmt.Println(connectionString)
-
-	var err error
-	app.DB, err = sql.Open("postgres", connectionString)
-	if err != nil {
-		log.Fatal(err)
-	}
-
+func (app *App) Initialize(db *sql.DB) {
+	app.DB = db
 	app.Router = mux.NewRouter()
-
 	app.initializeRoutes()
 }
 

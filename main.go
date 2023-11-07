@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
 	"log"
 	"os"
 	"strings"
@@ -14,8 +15,13 @@ func main() {
 		log.Fatal("Error loading environment variables: ", err)
 	}
 
+	db, err := sql.Open("postgres", getDBConnectionString())
+	if err != nil {
+		log.Fatal("Error connecting to database: ", err)
+	}
+
 	myApp := App{}
-	myApp.Initialize()
+	myApp.Initialize(db)
 	myApp.Run()
 }
 
