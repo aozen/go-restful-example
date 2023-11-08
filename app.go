@@ -34,6 +34,7 @@ func getDBConnectionString() string {
 
 func (app *App) initializeRoutes() {
 	app.Router.HandleFunc("/user/{id}", app.getUser).Methods("GET") // TODO: Try like REGEX. Check just digits, otherwise 404
+	app.Router.HandleFunc("/users", app.getUsers).Methods("GET")
 }
 
 func (app *App) getUser(w http.ResponseWriter, r *http.Request) {
@@ -57,4 +58,16 @@ func (app *App) getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println(user) // TODO: Return response to the writer.
+}
+
+func (app *App) getUsers(w http.ResponseWriter, r *http.Request) {
+	u := User{}
+
+	products, err := u.getUsers(app.DB)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Println(products)
 }
