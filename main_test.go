@@ -90,11 +90,14 @@ func clearUserTable() {
 	TestApp.DB.Exec("ALTER SEQUENCE users_id_seq RESTART WITH 1")
 }
 
-func executeRequest(req *http.Request) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	TestApp.Router.ServeHTTP(rr, req)
+func addUsers(count int) {
+	if count < 1 {
+		count = 1
+	}
 
-	return rr
+	for i := 0; i < count; i++ {
+		TestApp.DB.Exec("INSERT INTO users(username, email, password, created_at) VALUES($1, $2, $3, $4)", "Username_"+strconv.Itoa(i), "email"+strconv.Itoa((i+1.0)*10)+"@gmail.com", "*******", "09-10-2023 12:00:00")
+	}
 }
 
 func checkResponseCode(t *testing.T, expected, actual int) {
@@ -105,21 +108,11 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 
 func TestGetUser(t *testing.T) {
 	clearUserTable()
-	addUsers(10)
+	addUsers(1)
 
 	req, _ := http.NewRequest("GET", "/user/1", nil)
 	rr := httptest.NewRecorder()
 	TestApp.Router.ServeHTTP(rr, req)
 
 	checkResponseCode(t, http.StatusOK, rr.Code)
-}
-
-func addUsers(count int) {
-	if count < 1 {
-		count = 1
-	}
-
-	for i := 0; i < count; i++ {
-		TestApp.DB.Exec("INSERT INTO users(username, email, password, created_at) VALUES($1, $2, $3, $4)", "Username_"+strconv.Itoa(i), "email"+strconv.Itoa((i+1.0)*10)+"@gmail.com", "*******", "09-10-2023 12:00:00")
-	}
 }
