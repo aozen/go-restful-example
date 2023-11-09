@@ -111,7 +111,7 @@ func TestGetUser(t *testing.T) {
 	clearUserTable()
 	addUsers(1)
 
-	req, _ := http.NewRequest("GET", "/user/1", nil)
+	req, _ := http.NewRequest("GET", "/users/1", nil)
 	rr := httptest.NewRecorder()
 	TestApp.Router.ServeHTTP(rr, req)
 
