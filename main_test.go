@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -16,7 +17,7 @@ import (
 
 var TestApp App
 
-const tableCreationQuery = `CREATE TABLE IF NOT EXISTS users (
+const userTableCreationQuery = `CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -79,7 +80,7 @@ func loadTestEnvVariables() error { // Convert this to service or common place t
 }
 
 func checkUserTableExists() {
-	_, err := TestApp.DB.Exec(tableCreationQuery)
+	_, err := TestApp.DB.Exec(userTableCreationQuery)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,4 +116,26 @@ func TestGetUser(t *testing.T) {
 	TestApp.Router.ServeHTTP(rr, req)
 
 	checkResponseCode(t, http.StatusOK, rr.Code)
+}
+
+func TestGetUsers(t *testing.T) {
+	clearUserTable()
+	rowCount := 5
+	addUsers(rowCount)
+
+	req, _ := http.NewRequest("GET", "/users", nil)
+	rr := httptest.NewRecorder()
+	TestApp.Router.ServeHTTP(rr, req)
+
+	checkResponseCode(t, http.StatusOK, rr.Code)
+
+	var users []User
+	err := json.Unmarshal(rr.Body.Bytes(), &users)
+	if err != nil {
+		t.Errorf("Parsin Error: %v", err)
+	}
+
+	if len(users) != rowCount {
+		t.Errorf("Expected %d users, but got %d", rowCount, len(users))
+	}
 }

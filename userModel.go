@@ -18,7 +18,7 @@ func (u *User) getUser(db *sql.DB) error {
 }
 
 func (u *User) getUsers(db *sql.DB) ([]User, error) {
-	userRows, err := db.Query("SELECT username, email, created_at FROM users")
+	userRows, err := db.Query("SELECT id, username, email, created_at FROM users")
 
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (u *User) getUsers(db *sql.DB) ([]User, error) {
 	users := []User{}
 	for userRows.Next() {
 		var u User
-		if err := userRows.Scan(&u.Username, &u.Email, &u.CreatedAt); err != nil {
+		if err := userRows.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt); err != nil {
 			return nil, err
 		}
 		users = append(users, u)

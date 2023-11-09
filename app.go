@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ func (app *App) getUser(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(vars["id"]) // TODO: Check better ways to do.
 	if err != nil {
-		fmt.Println("Invalid User ID") // TODO: Return response to the writer.
+		responseJson(w, http.StatusBadRequest, "Invalid User ID")
 		return
 	}
 
@@ -50,24 +51,38 @@ func (app *App) getUser(w http.ResponseWriter, r *http.Request) {
 	if err := user.getUser(app.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			fmt.Println("User Not Found") // TODO: Return response to the writer.
+			responseJson(w, http.StatusNotFound, "User Not Found")
 		default:
-			fmt.Println(err.Error()) // TODO: Return response to the writer.
+			responseJson(w, http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
 
-	fmt.Println(user) // TODO: Return response to the writer.
+	responseJson(w, http.StatusOK, user)
 }
 
 func (app *App) getUsers(w http.ResponseWriter, r *http.Request) {
 	u := User{}
-
 	users, err := u.getUsers(app.DB)
 	if err != nil {
-		fmt.Println(err) // TODO: Return response to the writer
+		responseJson(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	fmt.Println("USERS:", users) // TODO: Return response to the writer
+	responseJson(w, http.StatusOK, users)
+}
+
+/*
+Example content:
+[{0 asdasd@gmail.com asf  2023-09-10T12:00:00Z} {0 asd@asd.sad 3335555  2023-11-09T13:25:06.713213Z}]
+
+Example response:
+[91 123 34 105 100 34 58 48 44 34 117 ... 93]
+*/
+func responseJson(w http.ResponseWriter, code int, content interface{}) { // Check <var>interface{} is for dynamic params?
+	response, _ := json.Marshal(content)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }
