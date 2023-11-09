@@ -12,11 +12,6 @@ type User struct {
 	CreatedAt string `json:"created_at"`
 }
 
-func (u *User) getUser(db *sql.DB) error {
-	return db.QueryRow("SELECT username, email, created_at FROM users WHERE id=$1",
-		u.ID).Scan(&u.Username, &u.Email, &u.CreatedAt)
-}
-
 func (u *User) getUsers(db *sql.DB) ([]User, error) {
 	userRows, err := db.Query("SELECT id, username, email, created_at FROM users")
 
@@ -35,4 +30,9 @@ func (u *User) getUsers(db *sql.DB) ([]User, error) {
 		users = append(users, u)
 	}
 	return users, nil
+}
+
+func (u *User) getUser(db *sql.DB) error {
+	return db.QueryRow("SELECT username, email, created_at FROM users WHERE id=$1",
+		u.ID).Scan(&u.Username, &u.Email, &u.CreatedAt)
 }

@@ -34,8 +34,23 @@ func getDBConnectionString() string {
 }
 
 func (app *App) initializeRoutes() {
-	app.Router.HandleFunc("/user/{id}", app.getUser).Methods("GET") // TODO: Try like REGEX. Check just digits, otherwise 404
 	app.Router.HandleFunc("/users", app.getUsers).Methods("GET")
+	app.Router.HandleFunc("/user/{id}", app.getUser).Methods("GET") // TODO: Try like REGEX. Check just digits, otherwise 404
+}
+
+/*
+Example content:
+[{0 asdasd@gmail.com asf  2023-09-10T12:00:00Z} {0 asd@asd.sad 3335555  2023-11-09T13:25:06.713213Z}]
+
+Example response:
+[91 123 34 105 100 34 58 48 44 34 117 ... 93]
+*/
+func responseJson(w http.ResponseWriter, code int, content interface{}) { // Check <var>interface{} is for dynamic params?
+	response, _ := json.Marshal(content)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }
 
 func (app *App) getUser(w http.ResponseWriter, r *http.Request) {
@@ -70,19 +85,4 @@ func (app *App) getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseJson(w, http.StatusOK, users)
-}
-
-/*
-Example content:
-[{0 asdasd@gmail.com asf  2023-09-10T12:00:00Z} {0 asd@asd.sad 3335555  2023-11-09T13:25:06.713213Z}]
-
-Example response:
-[91 123 34 105 100 34 58 48 44 34 117 ... 93]
-*/
-func responseJson(w http.ResponseWriter, code int, content interface{}) { // Check <var>interface{} is for dynamic params?
-	response, _ := json.Marshal(content)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
 }
