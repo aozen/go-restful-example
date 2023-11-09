@@ -63,11 +63,11 @@ func (app *App) getUser(w http.ResponseWriter, r *http.Request) {
 func (app *App) getUsers(w http.ResponseWriter, r *http.Request) {
 	u := User{}
 
-	products, err := u.getUsers(app.DB)
+	users, err := u.getUsers(app.DB)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err) // TODO: Return response to the writer
 		return
 	}
 
-	fmt.Println(products)
+	fmt.Println("USERS:", users) // TODO: Return response to the writer
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 )
 
 type User struct {
@@ -28,7 +27,6 @@ func (u *User) getUsers(db *sql.DB) ([]User, error) {
 	defer userRows.Close()
 
 	users := []User{}
-	fmt.Println(userRows)
 	for userRows.Next() {
 		var u User
 		if err := userRows.Scan(&u.Username, &u.Email, &u.CreatedAt); err != nil {
