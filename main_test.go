@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -138,4 +139,31 @@ func TestGetUsers(t *testing.T) {
 	if len(users) != rowCount {
 		t.Errorf("Expected %d users, but got %d", rowCount, len(users))
 	}
+}
+
+func TestCreateUser(t *testing.T) {
+	clearUserTable()
+
+	body := []byte(`{
+        "username": "testuser",
+        "email": "testuser@example.com",
+        "password": "testpassword",
+        "created_at": "2023-11-09T13:54:58.221Z"
+    }`)
+
+	req, _ := http.NewRequest("POST", "/users", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	TestApp.Router.ServeHTTP(rr, req)
+
+	checkResponseCode(t, http.StatusCreated, rr.Code)
+
+	var user User
+	err := json.Unmarshal(rr.Body.Bytes(), &user)
+	if err != nil {
+		t.Errorf("Parsing Error: %v", err)
+	}
+
+	// TODO: Validate the response.
 }

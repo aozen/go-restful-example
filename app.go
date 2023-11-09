@@ -35,7 +35,7 @@ func getDBConnectionString() string {
 
 func (app *App) initializeRoutes() {
 	app.Router.HandleFunc("/users", app.getUsers).Methods("GET")
-	//app.Router.HandleFunc("/users", app.createUser).Methods("POST")
+	app.Router.HandleFunc("/users", app.createUser).Methods("POST")
 	app.Router.HandleFunc("/users/{id}", app.getUser).Methods("GET") // TODO: Try like REGEX. Check just digits, otherwise 404
 	//app.Router.HandleFunc("/users/{id}", app.updateUser).Methods("PUT")
 	//app.Router.HandleFunc("/user/{id}", app.removeUser).Methods("DELETE")
@@ -88,4 +88,28 @@ func (app *App) getUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseJson(w, http.StatusOK, users)
+}
+
+func (app *App) createUser(w http.ResponseWriter, r *http.Request) {
+	user := User{}
+	decoder := json.NewDecoder(r.Body)
+
+	if err := decoder.Decode(&user); err != nil {
+		responseJson(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+	defer r.Body.Close()
+
+	if user.Username == "" || user.Email == "" || user.Password == "" { //TODO: Separate the errors
+		responseJson(w, http.StatusBadRequest, "Username, Email, and Password are required fields")
+		return
+	}
+
+	err := user.createUser(app.DB)
+	if err != nil {
+		responseJson(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	responseJson(w, http.StatusCreated, user)
 }
