@@ -14,6 +14,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var TestApp App
@@ -41,7 +43,7 @@ func TestMain(m *testing.M) {
 	// Run the tests
 	code := m.Run()
 
-	clearUserTable()
+	// clearUserTable()
 
 	// If all tests are success return 0, otherwise 1
 	os.Exit(code)
@@ -151,19 +153,39 @@ func TestCreateUser(t *testing.T) {
         "created_at": "2023-11-09T13:54:58.221Z"
     }`)
 
+	// Create
 	req, _ := http.NewRequest("POST", "/users", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 
 	rr := httptest.NewRecorder()
 	TestApp.Router.ServeHTTP(rr, req)
 
+	// Check isCreated
 	checkResponseCode(t, http.StatusCreated, rr.Code)
 
-	var user User
+	user := User{}
 	err := json.Unmarshal(rr.Body.Bytes(), &user)
 	if err != nil {
 		t.Errorf("Parsing Error: %v", err)
 	}
 
-	// TODO: Validate the response.
+	// Validate the response
+	if user.Username != "testuser" {
+		t.Errorf("Expected username to be 'testuser', got '%s'", user.Username)
+	}
+
+	if user.Email != "testuser@example.com" {
+		t.Errorf("Expected email to be 'testuser@example.com', got '%s'", user.Email)
+	}
+
+	checkPassword(t, user.Password, "testpassword")
+}
+
+func checkPassword(t *testing.T, storedHash, plaintextPassword string) {
+	fmt.Println(storedHash, plaintextPassword) // BUG: storedHash is testpassword, should be $2a$10... // Test fails.
+
+	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(plaintextPassword))
+	if err != nil {
+		t.Errorf("Expected password verification to succeed, but got error: %v", err)
+	}
 }
