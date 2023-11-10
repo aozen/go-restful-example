@@ -38,7 +38,7 @@ func (app *App) initializeRoutes() {
 	app.Router.HandleFunc("/users", app.createUser).Methods("POST")
 	app.Router.HandleFunc("/users/{id:[0-9]+}", app.getUser).Methods("GET")
 	//app.Router.HandleFunc("/users/{id:[0-9]+}", app.updateUser).Methods("PUT")
-	//app.Router.HandleFunc("/user/{id:[0-9]+}", app.removeUser).Methods("DELETE")
+	app.Router.HandleFunc("/users/{id:[0-9]+}", app.removeUser).Methods("DELETE")
 }
 
 /*
@@ -112,4 +112,27 @@ func (app *App) createUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseJson(w, http.StatusCreated, user)
+}
+
+func (app *App) removeUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"]) // TODO: Check better ways to do.
+	if err != nil {
+		responseJson(w, http.StatusBadRequest, "Invalid User ID")
+		return
+	}
+
+	user := User{ID: id}
+	if err := user.removeUser(app.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			responseJson(w, http.StatusNotFound, "User Not Found")
+		default:
+			responseJson(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	responseJson(w, http.StatusNoContent, nil)
 }

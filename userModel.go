@@ -56,3 +56,21 @@ func (u *User) createUser(db *sql.DB) error {
 
 	return nil
 }
+
+func (u *User) removeUser(db *sql.DB) error {
+	result, err := db.Exec("DELETE FROM users WHERE id=$1", u.ID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
