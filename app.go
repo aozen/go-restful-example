@@ -36,9 +36,9 @@ func getDBConnectionString() string {
 func (app *App) initializeRoutes() {
 	app.Router.HandleFunc("/users", app.getUsers).Methods("GET")
 	app.Router.HandleFunc("/users", app.createUser).Methods("POST")
-	app.Router.HandleFunc("/users/{id}", app.getUser).Methods("GET") // TODO: Try like REGEX. Check just digits, otherwise 404
-	//app.Router.HandleFunc("/users/{id}", app.updateUser).Methods("PUT")
-	//app.Router.HandleFunc("/user/{id}", app.removeUser).Methods("DELETE")
+	app.Router.HandleFunc("/users/{id:[0-9]+}", app.getUser).Methods("GET")
+	//app.Router.HandleFunc("/users/{id:[0-9]+}", app.updateUser).Methods("PUT")
+	//app.Router.HandleFunc("/user/{id:[0-9]+}", app.removeUser).Methods("DELETE")
 }
 
 /*
