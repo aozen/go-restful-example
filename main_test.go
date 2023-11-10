@@ -163,11 +163,8 @@ func TestCreateUser(t *testing.T) {
 	// Check isCreated
 	checkResponseCode(t, http.StatusCreated, rr.Code)
 
-	user := User{}
-	err := json.Unmarshal(rr.Body.Bytes(), &user)
-	if err != nil {
-		t.Errorf("Parsing Error: %v", err)
-	}
+	user := User{ID: 1}
+	user.getUser(TestApp.DB)
 
 	// Validate the response
 	if user.Username != "testuser" {
@@ -177,13 +174,10 @@ func TestCreateUser(t *testing.T) {
 	if user.Email != "testuser@example.com" {
 		t.Errorf("Expected email to be 'testuser@example.com', got '%s'", user.Email)
 	}
-
-	//checkPassword(t, user.Password, "testpassword")
+	checkPassword(t, user.Password, "testpassword")
 }
 
 func checkPassword(t *testing.T, storedHash, plaintextPassword string) {
-	fmt.Println(storedHash, plaintextPassword) // BUG: storedHash is testpassword, should be $2a$10... // Test fails.
-
 	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(plaintextPassword))
 	if err != nil {
 		t.Errorf("Expected password verification to succeed, but got error: %v", err)

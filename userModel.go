@@ -35,8 +35,8 @@ func (u *User) getUsers(db *sql.DB) ([]User, error) {
 }
 
 func (u *User) getUser(db *sql.DB) error {
-	return db.QueryRow("SELECT username, email, created_at FROM users WHERE id=$1",
-		u.ID).Scan(&u.Username, &u.Email, &u.CreatedAt)
+	return db.QueryRow("SELECT username, email, password, created_at FROM users WHERE id=$1",
+		u.ID).Scan(&u.Username, &u.Email, &u.Password, &u.CreatedAt)
 }
 
 func (u *User) createUser(db *sql.DB) error {
