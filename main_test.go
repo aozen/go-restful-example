@@ -110,6 +110,13 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 	}
 }
 
+func checkPassword(t *testing.T, storedHash, plaintextPassword string) {
+	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(plaintextPassword))
+	if err != nil {
+		t.Errorf("Expected password verification to succeed, but got error: %v", err)
+	}
+}
+
 func TestGetUser(t *testing.T) {
 	clearUserTable()
 	addUsers(1)
@@ -175,13 +182,6 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("Expected email to be 'testuser@example.com', got '%s'", user.Email)
 	}
 	checkPassword(t, user.Password, "testpassword")
-}
-
-func checkPassword(t *testing.T, storedHash, plaintextPassword string) {
-	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(plaintextPassword))
-	if err != nil {
-		t.Errorf("Expected password verification to succeed, but got error: %v", err)
-	}
 }
 
 func TestUpdateUserWithoutPassword(t *testing.T) {

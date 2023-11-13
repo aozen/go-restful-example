@@ -93,12 +93,12 @@ func (app *App) getUsers(w http.ResponseWriter, r *http.Request) {
 func (app *App) createUser(w http.ResponseWriter, r *http.Request) {
 	user := User{}
 	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 
 	if err := decoder.Decode(&user); err != nil {
 		responseJson(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-	defer r.Body.Close()
 
 	if user.Username == "" || user.Email == "" || user.Password == "" { //TODO: Separate the errors
 		responseJson(w, http.StatusBadRequest, "Username, Email, and Password are required fields")
@@ -125,12 +125,12 @@ func (app *App) updateUser(w http.ResponseWriter, r *http.Request) {
 	user := User{ID: id}
 
 	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
 	if err = decoder.Decode(&user); err != nil {
 		responseJson(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-
-	defer r.Body.Close()
 
 	if err := user.updateUser(app.DB); err != nil {
 		responseJson(w, http.StatusAccepted, err.Error())

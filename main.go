@@ -45,9 +45,5 @@ func loadEnvVariables() error {
 		os.Setenv(key, value)
 	}
 
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return scanner.Err()
 }
