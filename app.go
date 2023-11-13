@@ -37,7 +37,7 @@ func (app *App) initializeRoutes() {
 	app.Router.HandleFunc("/users", app.getUsers).Methods("GET")
 	app.Router.HandleFunc("/users", app.createUser).Methods("POST")
 	app.Router.HandleFunc("/users/{id:[0-9]+}", app.getUser).Methods("GET")
-	//app.Router.HandleFunc("/users/{id:[0-9]+}", app.updateUser).Methods("PUT")
+	app.Router.HandleFunc("/users/{id:[0-9]+}", app.updateUser).Methods("PUT")
 	app.Router.HandleFunc("/users/{id:[0-9]+}", app.removeUser).Methods("DELETE")
 }
 
@@ -114,6 +114,32 @@ func (app *App) createUser(w http.ResponseWriter, r *http.Request) {
 	responseJson(w, http.StatusCreated, user)
 }
 
+func (app *App) updateUser(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	id, err := strconv.Atoi(vars["id"]) // TODO: Check better ways to do.
+	if err != nil {
+		responseJson(w, http.StatusBadRequest, "Invalid User ID")
+		return
+	}
+	user := User{ID: id}
+
+	decoder := json.NewDecoder(r.Body)
+	if err = decoder.Decode(&user); err != nil {
+		responseJson(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+
+	defer r.Body.Close()
+
+	if err := user.updateUser(app.DB); err != nil {
+		responseJson(w, http.StatusAccepted, err.Error())
+		return
+	}
+
+	responseJson(w, http.StatusAccepted, "User updated successfully")
+}
+
 func (app *App) removeUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -134,5 +160,5 @@ func (app *App) removeUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseJson(w, http.StatusNoContent, nil)
+	responseJson(w, http.StatusNoContent, "User removed successfully")
 }

@@ -184,6 +184,100 @@ func checkPassword(t *testing.T, storedHash, plaintextPassword string) {
 	}
 }
 
+func TestUpdateUserWithoutPassword(t *testing.T) {
+	clearUserTable()
+
+	TestApp.DB.Exec("INSERT INTO users(username, email, password, created_at) VALUES($1, $2, $3, $4)", "orjUsername", "orjEmail@example.com", "orjPassword", "2023-01-01T00:00:00Z")
+	// orjPassword bcrypt =>
+	// $2a$10$9Wbz8C3Tddp.toovxIpnxeC3JUsUMVxP1BgmS/UyriXgcFSEekZee
+
+	body := []byte(`{
+        "username": "updatedUsername",
+        "email": "updatedEmail@example.com",
+        "created_at": "2024-01-01T00:00:00Z"
+    }`)
+	//"password": "updatedPassword",
+
+	// Update
+	req, _ := http.NewRequest("PUT", "/users/1", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	TestApp.Router.ServeHTTP(rr, req)
+
+	// Check isUpdated
+	checkResponseCode(t, http.StatusAccepted, rr.Code)
+
+	user := User{ID: 1}
+	user.getUser(TestApp.DB)
+
+	// Validate the response
+	if user.Username != "orjUsername" {
+		t.Errorf("Expected username to be 'orjUsername', got '%s'", user.Username)
+	}
+
+	if user.Email != "updatedEmail@example.com" {
+		t.Errorf("Expected email to be 'updatedEmail@example.com', got '%s'", user.Email)
+	}
+
+	if user.Email == "orjPassword" {
+		t.Errorf("Expected email to be 'updatedEmail@example.com', got '%s'", user.Email)
+	}
+
+	if user.CreatedAt != "2023-01-01T00:00:00Z" {
+		t.Errorf("Expected createdAt to be '2023-01-01T00:00:00Z', got '%s'", user.CreatedAt)
+	}
+
+	checkPassword(t, "$2a$10$9Wbz8C3Tddp.toovxIpnxeC3JUsUMVxP1BgmS/UyriXgcFSEekZee", user.Password)
+}
+
+func TestUserUpdateWithPassword(t *testing.T) {
+	clearUserTable()
+
+	TestApp.DB.Exec("INSERT INTO users(username, email, password, created_at) VALUES($1, $2, $3, $4)", "orjUsername", "orjEmail@example.com", "orjPassword", "2023-01-01T00:00:00Z")
+	// orjPassword bcrypt =>
+	// $2a$10$9Wbz8C3Tddp.toovxIpnxeC3JUsUMVxP1BgmS/UyriXgcFSEekZee
+
+	body := []byte(`{
+        "username": "updatedUsername",
+        "email": "updatedEmail@example.com",
+		"password": "updatedPassword",
+        "created_at": "2024-01-01T00:00:00Z"
+    }`)
+
+	// Update
+	req, _ := http.NewRequest("PUT", "/users/1", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	TestApp.Router.ServeHTTP(rr, req)
+
+	// Check isUpdated
+	checkResponseCode(t, http.StatusAccepted, rr.Code)
+
+	user := User{ID: 1}
+	user.getUser(TestApp.DB)
+
+	// Validate the response
+	if user.Username != "orjUsername" {
+		t.Errorf("Expected username to be 'orjUsername', got '%s'", user.Username)
+	}
+
+	if user.Email != "updatedEmail@example.com" {
+		t.Errorf("Expected email to be 'updatedEmail@example.com', got '%s'", user.Email)
+	}
+
+	if user.Email == "orjPassword" {
+		t.Errorf("Expected email to be 'updatedEmail@example.com', got '%s'", user.Email)
+	}
+
+	if user.CreatedAt != "2023-01-01T00:00:00Z" {
+		t.Errorf("Expected createdAt to be '2023-01-01T00:00:00Z', got '%s'", user.CreatedAt)
+	}
+
+	checkPassword(t, user.Password, "updatedPassword")
+}
+
 func TestRemoveUser(t *testing.T) {
 	clearUserTable()
 	addUsers(1)

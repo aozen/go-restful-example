@@ -57,6 +57,29 @@ func (u *User) createUser(db *sql.DB) error {
 	return nil
 }
 
+func (u *User) updateUser(db *sql.DB) error {
+	if u.Password != "" { // TODO: Instead of two query, make one but SMART
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+
+		_, err = db.Exec("UPDATE users SET password=$1 WHERE id=$2", hashedPassword, u.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	if u.Email != "" {
+		_, err := db.Exec("UPDATE users SET email=$1 WHERE id=$2", u.Email, u.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (u *User) removeUser(db *sql.DB) error {
 	result, err := db.Exec("DELETE FROM users WHERE id=$1", u.ID)
 	if err != nil {
